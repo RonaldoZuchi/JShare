@@ -25,6 +25,7 @@ import java.awt.event.WindowEvent;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -48,6 +49,13 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	private JComboBox cbnIp;
 	private InterfaceServidor servidor;
 	private Registry registro;
+	private JLabel lblNomeArquivo;
+	private JButton btnPesquisar;
+	private JTextField txtNomeArquivo;
+	private JLabel lblUsurio;
+	private JTextField txtUsuario;
+	private String nome;
+	private Cliente cliente;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -75,7 +83,6 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		this.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e){
-				//fecharTodosClientes();
 			}
 		});
 		
@@ -183,16 +190,16 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[]{18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_contentPane.rowHeights = new int[]{0, 0, 0};
-		gbl_contentPane.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPane.columnWidths = new int[]{18, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_contentPane.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+		gbl_contentPane.columnWeights = new double[]{0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
 		JLabel lblIp = new JLabel("IP");
 		GridBagConstraints gbc_lblIp = new GridBagConstraints();
 		gbc_lblIp.insets = new Insets(0, 0, 5, 5);
-		gbc_lblIp.anchor = GridBagConstraints.EAST;
+		gbc_lblIp.anchor = GridBagConstraints.WEST;
 		gbc_lblIp.gridx = 1;
 		gbc_lblIp.gridy = 0;
 		contentPane.add(lblIp, gbc_lblIp);
@@ -208,8 +215,8 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		
 		JLabel lblPorta = new JLabel("Porta");
 		GridBagConstraints gbc_lblPorta = new GridBagConstraints();
-		gbc_lblPorta.anchor = GridBagConstraints.EAST;
-		gbc_lblPorta.insets = new Insets(0, 0, 0, 5);
+		gbc_lblPorta.anchor = GridBagConstraints.WEST;
+		gbc_lblPorta.insets = new Insets(0, 0, 5, 5);
 		gbc_lblPorta.gridx = 1;
 		gbc_lblPorta.gridy = 1;
 		contentPane.add(lblPorta, gbc_lblPorta);
@@ -217,31 +224,120 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		txtPorta = new JTextField();
 		GridBagConstraints gbc_txtPorta = new GridBagConstraints();
 		gbc_txtPorta.gridwidth = 4;
-		gbc_txtPorta.insets = new Insets(0, 0, 0, 5);
+		gbc_txtPorta.insets = new Insets(0, 0, 5, 5);
 		gbc_txtPorta.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtPorta.gridx = 2;
 		gbc_txtPorta.gridy = 1;
 		contentPane.add(txtPorta, gbc_txtPorta);
 		txtPorta.setColumns(10);
 		
+		lblUsurio = new JLabel("Usu\u00E1rio");
+		GridBagConstraints gbc_lblUsurio = new GridBagConstraints();
+		gbc_lblUsurio.insets = new Insets(0, 0, 5, 5);
+		gbc_lblUsurio.gridx = 6;
+		gbc_lblUsurio.gridy = 1;
+		contentPane.add(lblUsurio, gbc_lblUsurio);
+		
+		txtUsuario = new JTextField();
+		GridBagConstraints gbc_txtUsuario = new GridBagConstraints();
+		gbc_txtUsuario.gridwidth = 2;
+		gbc_txtUsuario.insets = new Insets(0, 0, 5, 0);
+		gbc_txtUsuario.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtUsuario.gridx = 7;
+		gbc_txtUsuario.gridy = 1;
+		contentPane.add(txtUsuario, gbc_txtUsuario);
+		txtUsuario.setColumns(10);
+		
 		btnConectar = new JButton("Conectar");
 		GridBagConstraints gbc_btnConectar = new GridBagConstraints();
-		gbc_btnConectar.insets = new Insets(0, 0, 0, 5);
-		gbc_btnConectar.gridx = 7;
-		gbc_btnConectar.gridy = 1;
+		gbc_btnConectar.gridwidth = 3;
+		gbc_btnConectar.insets = new Insets(0, 0, 5, 5);
+		gbc_btnConectar.gridx = 4;
+		gbc_btnConectar.gridy = 2;
 		contentPane.add(btnConectar, gbc_btnConectar);
 		
 		btnDesconectar = new JButton("Desconectar");
 		GridBagConstraints gbc_btnDesconectar = new GridBagConstraints();
-		gbc_btnDesconectar.insets = new Insets(0, 0, 0, 5);
+		gbc_btnDesconectar.insets = new Insets(0, 0, 5, 0);
 		gbc_btnDesconectar.gridx = 8;
-		gbc_btnDesconectar.gridy = 1;
+		gbc_btnDesconectar.gridy = 2;
 		contentPane.add(btnDesconectar, gbc_btnDesconectar);
+		
+		lblNomeArquivo = new JLabel("Nome Arquivo");
+		GridBagConstraints gbc_lblNomeArquivo = new GridBagConstraints();
+		gbc_lblNomeArquivo.anchor = GridBagConstraints.WEST;
+		gbc_lblNomeArquivo.gridwidth = 4;
+		gbc_lblNomeArquivo.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNomeArquivo.gridx = 1;
+		gbc_lblNomeArquivo.gridy = 4;
+		contentPane.add(lblNomeArquivo, gbc_lblNomeArquivo);
+		
+		txtNomeArquivo = new JTextField();
+		GridBagConstraints gbc_txtNomeArquivo = new GridBagConstraints();
+		gbc_txtNomeArquivo.gridwidth = 7;
+		gbc_txtNomeArquivo.insets = new Insets(0, 0, 0, 5);
+		gbc_txtNomeArquivo.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtNomeArquivo.gridx = 1;
+		gbc_txtNomeArquivo.gridy = 5;
+		contentPane.add(txtNomeArquivo, gbc_txtNomeArquivo);
+		txtNomeArquivo.setColumns(10);
+		
+		btnPesquisar = new JButton("Pesquisar");
+		btnPesquisar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Cliente c = new Cliente();
+					c.setNome(txtUsuario.getText());
+					c.setIp(cbnIp.getSelectedItem().toString());
+					c.setPorta(Integer.parseInt(txtPorta.getText()));
+					RegistrarNovoCliente(c);
+				
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		GridBagConstraints gbc_btnPesquisar = new GridBagConstraints();
+		gbc_btnPesquisar.gridx = 8;
+		gbc_btnPesquisar.gridy = 5;
+		contentPane.add(btnPesquisar, gbc_btnPesquisar);
 	}
 
 	@Override
 	public void RegistrarNovoCliente(Cliente c) throws RemoteException {
-		// TODO Auto-generated method stub
+		
+		cliente = new Cliente();
+		
+		nome = c.getNome();
+		if(nome.length() == 0){
+			JOptionPane.showMessageDialog(this, "Informe um Nome de Usuário");	
+			return;
+		}
+		
+		String ip = c.getIp();
+		if (!ip.matches("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}")) {
+			JOptionPane.showMessageDialog(this, "Endereço de IP Inválido.");
+			return;
+		}
+		
+		String porta = Integer.toString(c.getPorta());
+		if (!porta.matches("[0-9]+") || porta.length() > 5) {
+			JOptionPane.showMessageDialog(this, "Número de Porta Incorreta.");
+			return;
+		}	
+		
+		try{
+			
+			registro = LocateRegistry.getRegistry(ip, c.getPorta());
+			servidor = (InterfaceServidor) registro.lookup(InterfaceServidor.NOME_SERVICO);
+			cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
+			//servidor.informarListaArquivo(c, lista);
+			
+		} catch(RemoteException e){
+			e.printStackTrace();
+		} catch (NotBoundException e){
+			e.printStackTrace();
+		}
 		
 	}
 

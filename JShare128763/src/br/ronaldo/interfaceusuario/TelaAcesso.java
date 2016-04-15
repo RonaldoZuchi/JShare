@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -31,6 +32,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,9 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	private JTextField txtUsuario;
 	private String nome;
 	private Cliente cliente;
+	private File[] listaArquivo;
+	private ArquivoDownload listaArquivos;
+	private List<ArquivoDownload> lista = new ArrayList<>();
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -154,6 +159,17 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		}catch(RemoteException e){
 			JOptionPane.showMessageDialog(this, "Erro ao Iniciar o Serviço");
 			e.printStackTrace();
+		}
+		
+		String diretorioDownload = "C:/Users/Ronaldo Zuchi/Documents/Documentos Ronaldo/Meus Arquivos/Faculdade TADS/5º Ano/Download";
+		File arquivoDownload = new File(diretorioDownload);
+		listaArquivo = arquivoDownload.listFiles();
+		for (int i=0; i<listaArquivo.length; i++){
+			listaArquivos = new ArquivoDownload();
+			File arquivo = listaArquivo[i];
+			listaArquivos.setNomeArquivo(arquivo.getName());
+			listaArquivos.setTamanhoArquivo(arquivo.length());
+			lista.add(listaArquivos);
 		}
 		
 	}
@@ -285,16 +301,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		btnPesquisar = new JButton("Pesquisar");
 		btnPesquisar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Cliente c = new Cliente();
-					c.setNome(txtUsuario.getText());
-					c.setIp(cbnIp.getSelectedItem().toString());
-					c.setPorta(Integer.parseInt(txtPorta.getText()));
-					RegistrarNovoCliente(c);
-				
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
-				}
+		
 			}
 		});
 		GridBagConstraints gbc_btnPesquisar = new GridBagConstraints();
@@ -305,40 +312,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 
 	@Override
 	public void RegistrarNovoCliente(Cliente c) throws RemoteException {
-		
-		cliente = new Cliente();
-		
-		nome = c.getNome();
-		if(nome.length() == 0){
-			JOptionPane.showMessageDialog(this, "Informe um Nome de Usuário");	
-			return;
-		}
-		
-		String ip = c.getIp();
-		if (!ip.matches("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}")) {
-			JOptionPane.showMessageDialog(this, "Endereço de IP Inválido.");
-			return;
-		}
-		
-		String porta = Integer.toString(c.getPorta());
-		if (!porta.matches("[0-9]+") || porta.length() > 5) {
-			JOptionPane.showMessageDialog(this, "Número de Porta Incorreta.");
-			return;
-		}	
-		
-		try{
-			
-			registro = LocateRegistry.getRegistry(ip, c.getPorta());
-			servidor = (InterfaceServidor) registro.lookup(InterfaceServidor.NOME_SERVICO);
-			cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
-			//servidor.informarListaArquivo(c, lista);
-			
-		} catch(RemoteException e){
-			e.printStackTrace();
-		} catch (NotBoundException e){
-			e.printStackTrace();
-		}
-		
+				
 	}
 
 	@Override

@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class Cliente implements Serializable{
 
 	private static final long serialVersionUID = 3623490832380407912L;
-	
 	private String nome;
 	private String ip;
 	private int porta;

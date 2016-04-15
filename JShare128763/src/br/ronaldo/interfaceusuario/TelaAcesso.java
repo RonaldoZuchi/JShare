@@ -34,6 +34,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -61,6 +62,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	private File[] listaArquivo;
 	private ArquivoDownload listaArquivos;
 	private List<ArquivoDownload> lista = new ArrayList<>();
+	private Map<String, Cliente> mapaConectados = new HashMap<>();
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -161,16 +163,32 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			e.printStackTrace();
 		}
 		
-		String diretorioDownload = "C:/Users/Ronaldo Zuchi/Documents/Documentos Ronaldo/Meus Arquivos/Faculdade TADS/5º Ano/Download";
-		File arquivoDownload = new File(diretorioDownload);
-		listaArquivo = arquivoDownload.listFiles();
-		for (int i=0; i<listaArquivo.length; i++){
-			listaArquivos = new ArquivoDownload();
-			File arquivo = listaArquivo[i];
-			listaArquivos.setNomeArquivo(arquivo.getName());
-			listaArquivos.setTamanhoArquivo(arquivo.length());
-			lista.add(listaArquivos);
+		try {
+			cliente = new Cliente();
+			cliente.setIp(cbnIp.getSelectedItem().toString());
+			cliente.setNome(txtUsuario.getText());
+			cliente.setPorta(Integer.parseInt(txtPorta.getText()));
+			RegistrarNovoCliente(cliente);
+		} catch (RemoteException e) {
+			e.printStackTrace();
 		}
+		
+		try {
+			String diretorioDownload = "C:/Users/Ronaldo Zuchi/Documents/Documentos Ronaldo/Meus Arquivos/Faculdade TADS/5º Ano/Download";
+			File arquivoDownload = new File(diretorioDownload);
+			listaArquivo = arquivoDownload.listFiles();
+			for (int i=0; i<listaArquivo.length; i++){
+				listaArquivos = new ArquivoDownload();
+				File arquivo = listaArquivo[i];
+				listaArquivos.setNomeArquivo(arquivo.getName());
+				listaArquivos.setTamanhoArquivo(arquivo.length());
+				lista.add(listaArquivos);
+			}
+			informarListaArquivo(cliente, lista);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
 		
 	}
 
@@ -312,30 +330,31 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 
 	@Override
 	public void RegistrarNovoCliente(Cliente c) throws RemoteException {
-				
+			String ip = c.getIp();
+			mapaConectados.put(ip, c);
 	}
 
 	@Override
 	public void informarListaArquivo(Cliente c, List<ArquivoDownload> lista) throws RemoteException {
-		// TODO Auto-generated method stub
+
 		
 	}
 
 	@Override
 	public Map<Cliente, List<ArquivoDownload>> buscarArquivo(String nome) throws RemoteException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
 	public byte[] downloadArquivo(ArquivoDownload arquivo) throws RemoteException {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public void desconectar(Cliente c) throws RemoteException {
-		// TODO Auto-generated method stub
+
 		
 	}
 

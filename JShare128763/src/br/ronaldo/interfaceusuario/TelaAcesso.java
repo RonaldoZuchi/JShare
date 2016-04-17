@@ -35,13 +35,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JTextField;
+import javax.swing.ListModel;
+import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JScrollPane;
+import javax.swing.JList;
 
 public class TelaAcesso extends JFrame implements InterfaceServidor{
 
@@ -64,7 +71,9 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	private List<ArquivoDownload> lista = new ArrayList<>();
 	private Map<String, Cliente> mapaConectados = new HashMap<>();
 	private Map<Cliente, List<ArquivoDownload>> mapaArquivos = new HashMap<>();
-	private Map<Cliente, List<ArquivoDownload>> arquivoEncontrado = new HashMap<>();
+	private List<String> arquivoEncontrado = new ArrayList<>();
+	private JScrollPane scrollPane;
+	private JList relacaoArquivos;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -83,6 +92,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	protected void configurar() {
 		
 		btnDesconectar.setEnabled(false);
+		btnPesquisar.setEnabled(false);
 		List<String> lista = getIpDisponivel();
 		cbnIp.setModel(new DefaultComboBoxModel<String>(new Vector<String>(lista)));
 		cbnIp.setSelectedIndex(0);
@@ -159,6 +169,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			cbnIp.setEnabled(false);
 			txtPorta.setEnabled(false);
 			btnConectar.setEnabled(false);
+			btnPesquisar.setEnabled(true);
 			btnDesconectar.setEnabled(true);
 		}catch(RemoteException e){
 			JOptionPane.showMessageDialog(this, "Erro ao Iniciar o Serviço");
@@ -221,15 +232,15 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 
 	public TelaAcesso() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 450, 362);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
 		gbl_contentPane.columnWidths = new int[]{18, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_contentPane.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+		gbl_contentPane.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_contentPane.columnWeights = new double[]{0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
 		JLabel lblIp = new JLabel("IP");
@@ -311,7 +322,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		txtNomeArquivo = new JTextField();
 		GridBagConstraints gbc_txtNomeArquivo = new GridBagConstraints();
 		gbc_txtNomeArquivo.gridwidth = 7;
-		gbc_txtNomeArquivo.insets = new Insets(0, 0, 0, 5);
+		gbc_txtNomeArquivo.insets = new Insets(0, 0, 5, 5);
 		gbc_txtNomeArquivo.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtNomeArquivo.gridx = 1;
 		gbc_txtNomeArquivo.gridy = 5;
@@ -322,6 +333,18 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		btnPesquisar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
+					Cliente c = new Cliente();
+					ArquivoDownload a = new ArquivoDownload();
+					c.setIp("192.168.2.0");
+					c.setNome("Paulo");
+					c.setPorta(5050);
+					a.setNomeArquivo("Arquivo1");
+					a.setTamanhoArquivo(1048);
+					lista.add(a);
+					mapaArquivos.put(c, lista);
+					
+					
+					
 					buscarArquivo(txtNomeArquivo.getText());
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
@@ -329,9 +352,23 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			}
 		});
 		GridBagConstraints gbc_btnPesquisar = new GridBagConstraints();
+		gbc_btnPesquisar.insets = new Insets(0, 0, 5, 0);
 		gbc_btnPesquisar.gridx = 8;
 		gbc_btnPesquisar.gridy = 5;
 		contentPane.add(btnPesquisar, gbc_btnPesquisar);
+		
+		scrollPane = new JScrollPane();
+		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+		gbc_scrollPane.gridheight = 2;
+		gbc_scrollPane.gridwidth = 8;
+		gbc_scrollPane.insets = new Insets(0, 0, 0, 5);
+		gbc_scrollPane.fill = GridBagConstraints.BOTH;
+		gbc_scrollPane.gridx = 1;
+		gbc_scrollPane.gridy = 6;
+		contentPane.add(scrollPane, gbc_scrollPane);
+		
+		relacaoArquivos = new JList();
+		scrollPane.setViewportView(relacaoArquivos);
 	}
 
 	@Override
@@ -350,14 +387,40 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	@Override
 	public Map<Cliente, List<ArquivoDownload>> buscarArquivo(String nome) throws RemoteException {
 		
-		System.out.println("Lista de Arquivos");
-		System.out.println("IP " + "Arquivo");
-		for(int i=0; i<mapaArquivos.size(); i++){
-			if(nome.equals(mapaArquivos.containsValue(listaArquivos.getNomeArquivo()))){
-				System.out.println(mapaArquivos.get(cliente.getIp()) + " " + mapaArquivos.containsValue(listaArquivos.getNomeArquivo()));
+		Set <Entry<Cliente, List<ArquivoDownload>>> novo = mapaArquivos.entrySet();
+		Iterator it = novo.iterator();
+		Cliente c = new Cliente();
+		ArquivoDownload a = new ArquivoDownload();
+		while(it.hasNext()){
+			Entry<Cliente, List<ArquivoDownload>> entry = (Entry)it.next();
+			c = entry.getKey();
+			for(int i=0; i<entry.getValue().size(); i++){
+				a = entry.getValue().get(i);
+				if(a.getNomeArquivo().equals(nome)){
+					arquivoEncontrado.add(c.getIp() + " - " + a.getNomeArquivo());
+					System.out.println(arquivoEncontrado);
+				}
 			}
 		}		
+		listadeParticipantes(arquivoEncontrado);
 		return null;
+	}
+
+	private void listadeParticipantes(List<String> arquivoEncontrado2) throws RemoteException {
+		
+		ListModel<String> modelo = new AbstractListModel<String>() {
+
+			@Override
+			public String getElementAt(int index) {
+				return arquivoEncontrado2.get(index);
+			}
+
+			@Override
+			public int getSize() {
+				return arquivoEncontrado2.size();
+			}
+		};
+		relacaoArquivos.setModel(modelo);
 	}
 
 	@Override
@@ -374,7 +437,5 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 				mapaArquivos.remove(c);
 			}
 		}
-		
 	}
-
 }

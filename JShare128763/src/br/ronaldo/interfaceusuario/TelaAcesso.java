@@ -49,6 +49,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class TelaAcesso extends JFrame implements InterfaceServidor{
 
@@ -125,6 +127,37 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			
 		});
 		
+		btnPesquisar.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				pesquisar();
+				
+			}
+			
+		});
+		
+	}
+
+	protected void pesquisar() {
+		try {
+			Cliente c = new Cliente();
+			ArquivoDownload a = new ArquivoDownload();
+			c.setIp("192.168.255.128");
+			c.setNome("Paulo");
+			c.setPorta(5050);
+			a.setNomeArquivo("Arquivo1");
+			a.setTamanhoArquivo(1048);
+			lista.add(a);
+			mapaArquivos.put(c, lista);
+			
+			
+			
+			buscarArquivo(txtNomeArquivo.getText());
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		}
+		
 	}
 
 	protected void desconectar() {
@@ -135,8 +168,9 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 
 			cbnIp.setEnabled(true);
 			txtPorta.setEnabled(true);
+			txtUsuario.setEnabled(true);
 			btnConectar.setEnabled(true);
-
+			btnPesquisar.setEnabled(false);
 			btnDesconectar.setEnabled(false);
 
 		} catch (RemoteException e) {
@@ -168,6 +202,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			
 			cbnIp.setEnabled(false);
 			txtPorta.setEnabled(false);
+			txtUsuario.setEnabled(false);
 			btnConectar.setEnabled(false);
 			btnPesquisar.setEnabled(true);
 			btnDesconectar.setEnabled(true);
@@ -330,27 +365,6 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		txtNomeArquivo.setColumns(10);
 		
 		btnPesquisar = new JButton("Pesquisar");
-		btnPesquisar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					Cliente c = new Cliente();
-					ArquivoDownload a = new ArquivoDownload();
-					c.setIp("192.168.2.0");
-					c.setNome("Paulo");
-					c.setPorta(5050);
-					a.setNomeArquivo("Arquivo1");
-					a.setTamanhoArquivo(1048);
-					lista.add(a);
-					mapaArquivos.put(c, lista);
-					
-					
-					
-					buscarArquivo(txtNomeArquivo.getText());
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
 		GridBagConstraints gbc_btnPesquisar = new GridBagConstraints();
 		gbc_btnPesquisar.insets = new Insets(0, 0, 5, 0);
 		gbc_btnPesquisar.gridx = 8;
@@ -368,6 +382,25 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		contentPane.add(scrollPane, gbc_scrollPane);
 		
 		relacaoArquivos = new JList();
+		relacaoArquivos.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getButton() == MouseEvent.BUTTON1){
+					if(e.getClickCount() == 2){
+						int selecao = relacaoArquivos.getSelectedIndex();
+						if(selecao == -1){
+							return;
+						}
+						String novo = (String) relacaoArquivos.getModel().getElementAt(selecao).toString();
+						String ip = novo.substring(0,novo.indexOf(" - "));
+						String nomeArquivo = novo.substring(novo.indexOf(" - ")+3);
+						int porta = Integer.parseInt(txtPorta.getText());
+						
+						System.out.println(ip + " " + nomeArquivo + " " + porta);
+					}
+				}
+			}
+		});
 		scrollPane.setViewportView(relacaoArquivos);
 	}
 
@@ -437,5 +470,13 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 				mapaArquivos.remove(c);
 			}
 		}
+		UnicastRemoteObject.unexportObject(this, true);
+		UnicastRemoteObject.unexportObject(registro, true);
+		cbnIp.setEnabled(true);
+		txtPorta.setEnabled(true);
+		txtUsuario.setEnabled(true);
+		btnConectar.setEnabled(true);
+		btnDesconectar.setEnabled(false);
+		btnPesquisar.setEnabled(false);
 	}
 }

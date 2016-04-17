@@ -112,31 +112,22 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				conectar();
-				
 			}
-			
 		});
 		
 		btnDesconectar.addActionListener(new ActionListener(){
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				desconectar();
-				
 			}
-			
 		});
 		
 		btnPesquisar.addActionListener(new ActionListener(){
-
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				pesquisar();
-				
 			}
-			
 		});
-		
 	}
 
 	protected void pesquisar() {
@@ -149,15 +140,13 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			a.setNomeArquivo("Arquivo1");
 			a.setTamanhoArquivo(1048);
 			lista.add(a);
+			mapaConectados.put(c.getIp(), c);
 			mapaArquivos.put(c, lista);
-			
-			
 			
 			buscarArquivo(txtNomeArquivo.getText());
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		}
-		
 	}
 
 	protected void desconectar() {
@@ -176,7 +165,6 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	protected void conectar() {
@@ -235,9 +223,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			informarListaArquivo(cliente, lista);
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		}
-		
-		
+		}		
 	}
 
 	private List<String> getIpDisponivel() {
@@ -396,12 +382,28 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 						String nomeArquivo = novo.substring(novo.indexOf(" - ")+3);
 						int porta = Integer.parseInt(txtPorta.getText());
 						
-						System.out.println(ip + " " + nomeArquivo + " " + porta);
+						busca(ip, nomeArquivo);
 					}
 				}
 			}
 		});
 		scrollPane.setViewportView(relacaoArquivos);
+	}
+
+	protected void busca(String ip, String nomeArquivo) {
+
+		Cliente c = new Cliente();
+		for(int i=0; i<mapaConectados.size(); i++){
+			Set<Entry<String, Cliente>> busca = mapaConectados.entrySet();
+			Iterator it = busca.iterator();
+			while(it.hasNext()){
+				Entry<String, Cliente> entry = (Entry) it.next();
+				if(entry.getKey().equals(ip)){
+					c = entry.getValue();
+				}
+			}
+		}
+		System.out.println(c.getIp() + " " + c.getNome() + " " + c.getPorta());
 	}
 
 	@Override

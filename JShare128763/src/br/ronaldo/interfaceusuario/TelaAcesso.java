@@ -63,6 +63,8 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	private ArquivoDownload listaArquivos;
 	private List<ArquivoDownload> lista = new ArrayList<>();
 	private Map<String, Cliente> mapaConectados = new HashMap<>();
+	private Map<Cliente, List<ArquivoDownload>> mapaArquivos = new HashMap<>();
+	private Map<Cliente, List<ArquivoDownload>> arquivoEncontrado = new HashMap<>();
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -337,11 +339,20 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	@Override
 	public void informarListaArquivo(Cliente c, List<ArquivoDownload> lista) throws RemoteException {
 
+		mapaArquivos.put(c, lista);
 		
 	}
 
 	@Override
 	public Map<Cliente, List<ArquivoDownload>> buscarArquivo(String nome) throws RemoteException {
+		
+		System.out.println("Lista de Arquivos");
+		System.out.println("IP " + "Arquivo");
+		for(int i=0; i<mapaArquivos.size(); i++){
+			if(nome.equals(mapaArquivos.containsValue(listaArquivos.getNomeArquivo()))){
+				System.out.println(mapaArquivos.get(cliente.getIp()) + " " + mapaArquivos.containsValue(listaArquivos.getNomeArquivo()));
+			}
+		}
 		
 		return null;
 	}
@@ -354,7 +365,12 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 
 	@Override
 	public void desconectar(Cliente c) throws RemoteException {
-
+		mapaConectados.remove(c);
+		for(int i=0; i<mapaArquivos.size(); i++){
+			if(c == mapaArquivos.keySet()){
+				mapaArquivos.remove(c);
+			}
+		}
 		
 	}
 

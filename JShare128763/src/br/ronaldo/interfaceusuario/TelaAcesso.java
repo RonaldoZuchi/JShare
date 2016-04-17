@@ -321,7 +321,11 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 		btnPesquisar = new JButton("Pesquisar");
 		btnPesquisar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-		
+				try {
+					buscarArquivo(txtNomeArquivo.getText());
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		GridBagConstraints gbc_btnPesquisar = new GridBagConstraints();
@@ -352,8 +356,7 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 			if(nome.equals(mapaArquivos.containsValue(listaArquivos.getNomeArquivo()))){
 				System.out.println(mapaArquivos.get(cliente.getIp()) + " " + mapaArquivos.containsValue(listaArquivos.getNomeArquivo()));
 			}
-		}
-		
+		}		
 		return null;
 	}
 

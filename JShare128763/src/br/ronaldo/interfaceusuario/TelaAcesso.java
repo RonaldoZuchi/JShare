@@ -132,17 +132,6 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 
 	protected void pesquisar() {
 		try {
-			Cliente c = new Cliente();
-			ArquivoDownload a = new ArquivoDownload();
-			c.setIp("192.168.255.128");
-			c.setNome("Paulo");
-			c.setPorta(5050);
-			a.setNomeArquivo("Arquivo1");
-			a.setTamanhoArquivo(1048);
-			lista.add(a);
-			mapaConectados.put(c.getIp(), c);
-			mapaArquivos.put(c, lista);
-			
 			buscarArquivo(txtNomeArquivo.getText());
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
@@ -391,19 +380,41 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	}
 
 	protected void busca(String ip, String nomeArquivo) {
-
-		Cliente c = new Cliente();
-		for(int i=0; i<mapaConectados.size(); i++){
-			Set<Entry<String, Cliente>> busca = mapaConectados.entrySet();
-			Iterator it = busca.iterator();
-			while(it.hasNext()){
-				Entry<String, Cliente> entry = (Entry) it.next();
-				if(entry.getKey().equals(ip)){
-					c = entry.getValue();
+		try {
+			Cliente c = new Cliente();
+			for(int i=0; i<mapaConectados.size(); i++){
+				Set<Entry<String, Cliente>> busca = mapaConectados.entrySet();
+				Iterator it = busca.iterator();
+				while(it.hasNext()){
+					Entry<String, Cliente> entry = (Entry) it.next();
+					if(entry.getKey().equals(ip)){
+						c = entry.getValue();
+					}
 				}
 			}
+			System.out.println(c.getIp() + " " + c.getNome() + " " + c.getPorta());
+		
+			ArquivoDownload a = new ArquivoDownload();
+			List<ArquivoDownload> lt = new ArrayList<>();
+			for(int i=0; i<mapaArquivos.size(); i++){
+				Set<Entry<Cliente, List<ArquivoDownload>>> buscaArquivo = mapaArquivos.entrySet();
+				Iterator itArquivo = buscaArquivo.iterator();
+				while(itArquivo.hasNext()){
+					Entry<Cliente, List<ArquivoDownload>> entryArquivo = (Entry) itArquivo.next();
+					if(entryArquivo.getKey().equals(c));
+					lt = entryArquivo.getValue();
+					for(int j=0; j<lt.size(); j++){
+						if(lt.get(j).getNomeArquivo().equals(nomeArquivo)){
+							a = lt.get(j);
+						}
+					}
+				}
+			}		
+			downloadArquivo(a);
+		} catch (RemoteException e) {
+			e.printStackTrace();
 		}
-		System.out.println(c.getIp() + " " + c.getNome() + " " + c.getPorta());
+		
 	}
 
 	@Override
@@ -433,7 +444,6 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 				a = entry.getValue().get(i);
 				if(a.getNomeArquivo().equals(nome)){
 					arquivoEncontrado.add(c.getIp() + " - " + a.getNomeArquivo());
-					System.out.println(arquivoEncontrado);
 				}
 			}
 		}		
@@ -461,17 +471,26 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 	@Override
 	public byte[] downloadArquivo(ArquivoDownload arquivo) throws RemoteException {
 
+		System.out.println(arquivo.getNomeArquivo());
 		return null;
 	}
 
 	@Override
 	public void desconectar(Cliente c) throws RemoteException {
-		mapaConectados.remove(c);
-		for(int i=0; i<mapaArquivos.size(); i++){
-			if(c == mapaArquivos.keySet()){
-				mapaArquivos.remove(c);
-			}
+		for(int i=0; i<mapaConectados.size(); i++){
+			mapaConectados.remove(i);
 		}
+		
+		for(int i=0; i<mapaArquivos.size(); i++){
+			mapaArquivos.remove(i);
+		}
+		
+		for(int i=0; i<arquivoEncontrado.size(); i++){
+			arquivoEncontrado.remove(i);
+		}
+		
+		listaArquivo = null;
+		
 		UnicastRemoteObject.unexportObject(this, true);
 		UnicastRemoteObject.unexportObject(registro, true);
 		cbnIp.setEnabled(true);

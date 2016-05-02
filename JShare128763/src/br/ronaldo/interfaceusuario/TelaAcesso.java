@@ -10,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 import br.ronaldo.comum.Cliente;
 import br.ronaldo.comum.InterfaceServidor;
 import br.ronaldo.comundownload.ArquivoDownload;
+import br.ronaldo.gravacaoleitura.LerGravarArquivo;
 
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
@@ -470,7 +471,9 @@ public class TelaAcesso extends JFrame implements InterfaceServidor{
 
 	@Override
 	public byte[] downloadArquivo(ArquivoDownload arquivo) throws RemoteException {
-
+		
+		File byteArquivo = new File("C:/Users/Ronaldo Zuchi/Documents/Documentos Ronaldo/Meus Arquivos/Faculdade TADS/5º Ano/Download/" + arquivo.getNomeArquivo());
+		LerGravarArquivo dadosArquivo = new LerGravarArquivo(byteArquivo);
 		System.out.println(arquivo.getNomeArquivo());
 		return null;
 	}

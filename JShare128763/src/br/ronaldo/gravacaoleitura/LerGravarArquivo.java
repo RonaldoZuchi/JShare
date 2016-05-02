@@ -34,9 +34,4 @@ public class LerGravarArquivo {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public static void main(String args[]){
-		new LerGravarArquivo(new File("logo.png"));
-	}
-
 }
